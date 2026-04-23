@@ -1,6 +1,6 @@
 class Solution {
 public:
-    int minDifference(vector<int>& arr) 
+    int minDifference(vector<int>& arr)
 {
         int n = arr.size();
         int totalSum = 0;
