@@ -1,47 +1,54 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
+#include <bits/stdc++.h>
+
 using namespace std;
 
-pair<int,int> jobSequencing(vector<int>& deadline, vector<int>& profit) {
-    int n = deadline.size();
+struct Job {
+    int deadline;
+    int profit;
+};
 
-    vector<pair<int,int>> jobs(n);
-    for (int i = 0; i < n; i++)
-        jobs[i] = {profit[i], deadline[i]};
-    sort(jobs.begin(), jobs.end(), greater<pair<int,int>>());
+class Solution {
+    vector<int> parent;
 
-    int maxDead = *max_element(deadline.begin(), deadline.end());
+public:
 
-    
-    vector<int> slot(maxDead + 1, -1);
-
-    int count = 0, totalProfit = 0;
-
-    for (int i = 0; i < n; i++) {
-        int d = jobs[i].second;
-        int p = jobs[i].first;
-
-        
-        for (int j = d; j >= 1; j--) {
-            if (slot[j] == -1) {
-                slot[j] = i;       
-                count++;
-                totalProfit += p;
-                break;
-            }
-        }
+    int findSlot(int t) {
+        if (t == parent[t]) return t;
+        return parent[t] = findSlot(parent[t]);
     }
 
-    return {count, totalProfit};
-}
+    vector<int> jobSequencing(vector<int>& deadline, vector<int>& profit) {
+        int n = deadline.size();
+        vector<Job> jobList(n);
+        int maxDeadline = 0;
 
-int main() {
-    vector<int> deadline = {4, 1, 1, 1};
-    vector<int> profit   = {20, 10, 40, 30};
+        for (int i = 0; i < n; i++) {
+            jobList[i] = {deadline[i], profit[i]};
+            maxDeadline = max(maxDeadline, deadline[i]);
+        }
 
-    auto [jobs, prof] = jobSequencing(deadline, profit);
-    cout << "Jobs: " << jobs << ", Profit: " << prof << endl;
- 
-    return 0;
-}
+
+        sort(jobList.begin(), jobList.end(), [](const Job& a, const Job& b) {
+            return a.profit > b.profit;
+        });
+
+        parent.resize(maxDeadline + 1);
+        iota(parent.begin(), parent.end(), 0); 
+
+        int jobsCount = 0;
+        int totalProfit = 0;
+
+        for (int i = 0; i < n; i++) {
+            int availableSlot = findSlot(jobList[i].deadline);
+
+            if (availableSlot > 0) {
+                parent[availableSlot] = findSlot(availableSlot - 1);
+                
+                jobsCount++;
+                totalProfit += jobList[i].profit;
+            }
+        }
+
+        return {jobsCount, totalProfit};
+    }
+};
